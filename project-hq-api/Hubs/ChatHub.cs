@@ -9,9 +9,15 @@ namespace project_hq_api.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public class ChatMessage
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            public string User { get; set; }
+            public string Message { get; set; }
+        }
+        
+        public async Task SendMessage(ChatMessage message)
+        {
+            await Clients.All.SendAsync("ReceiveMessage", message.User, message.Message);
         }
     }
 }
