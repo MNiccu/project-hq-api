@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using project_hq_api.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace project_hq_api
 {
     public class Startup
     {
+        private const string AllowedOrigins = "allowedOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -26,11 +29,21 @@ namespace project_hq_api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddSignalR();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "project_hq_api", Version = "v1" });
+            });
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: AllowedOrigins, builder =>
+                {
+                    builder.WithOrigins("https://localhost:5001", "http://localhost:5000", "http://localhost:3000") // TODO fetch these from config
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials(); 
+                });
             });
         }
 
@@ -43,16 +56,22 @@ namespace project_hq_api
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "project_hq_api v1"));
             }
-
-            app.UseHttpsRedirection();
-
+            else
+            {
+                app.UseHttpsRedirection();
+            }
+            
             app.UseRouting();
+            
+            app.UseCors(AllowedOrigins);
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+
+                endpoints.MapHub<ChatHub>("/hub/chat");
             });
         }
     }
