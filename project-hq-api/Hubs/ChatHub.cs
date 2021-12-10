@@ -7,17 +7,47 @@ using System.Threading.Tasks;
 
 namespace project_hq_api.Hubs
 {
-    public class ChatHub : Hub
+
+    public interface IClient
     {
+        public Task ReceiveMessage(string username, string message);
+        public Task ConfirmLogin(string message);
+        
+        
+    }
+
+    public class ChatHub : Hub<IClient>
+    {
+
         public class ChatMessage
         {
             public string User { get; set; }
             public string Message { get; set; }
         }
-        
+
+
         public async Task SendMessage(ChatMessage message)
         {
-            await Clients.All.SendAsync("ReceiveMessage", message.User, message.Message);
+            await Clients.All.ReceiveMessage(message.User, message.Message);
         }
+
+
+      
+
+
+        public async Task Login(string username)
+        {
+            //gets username
+            //check it?
+            //save to hub context
+            //string computerName = Clients.Caller.computerName;
+            this.Context.Items["username"] = username;
+            Console.WriteLine("called succesfully");
+        }
+
+        public async Task CheckLogin() {
+            await Clients.Caller.ConfirmLogin((string)this.Context.Items["username"]);
+        }
+
     }
 }
