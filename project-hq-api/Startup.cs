@@ -58,7 +58,7 @@ namespace project_hq_api
             }
             else
             {
-                app.UseHttpsRedirection();
+               // app.UseHttpsRedirection();
             }
             
             app.UseRouting();
