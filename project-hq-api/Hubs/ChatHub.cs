@@ -31,10 +31,6 @@ namespace project_hq_api.Hubs
             await Clients.All.ReceiveMessage(message.User, message.Message);
         }
 
-
-      
-
-
         public async Task Login(string username)
         {
             //gets username
@@ -49,5 +45,14 @@ namespace project_hq_api.Hubs
             await Clients.Caller.ConfirmLogin((string)this.Context.Items["username"]);
         }
 
+
+        public Task JoinGroup(string group)
+        {
+            return Groups.AddToGroupAsync(Context.ConnectionId, group);
+        }
+        public async Task SendMessageToGroup(string group, ChatMessage message)
+        {
+            await Clients.Group(group).ReceiveMessage(message.User, message.Message);
+        }
     }
 }
